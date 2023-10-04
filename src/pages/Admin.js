@@ -1,12 +1,32 @@
 import React, { useState, useEffect } from 'react';
+
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+
 import db from "../firebaseConfig";
+import { getAuth, signOut } from 'firebase/auth';
+import useAuthListener from '../useAuthListener';
+import { useNavigate } from 'react-router-dom';
 
 function Admin() {
+  const user = useAuthListener();
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
   const [urunler, setUrunler] = useState([]);
   const [urun, setUrun] = useState({ isim: "", icerik: "", fiyat: "", kategori: "" });
   const [yeniKategori, setYeniKategori] = useState("");
   const [kategoriler, setKategoriler] = useState([]);
+
+  const logout = () => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+        // Oturum başarılı bir şekilde kapatıldı. Şimdi kullanıcıyı login sayfasına yönlendirebilirsiniz.
+        navigate("/login");
+    }).catch((error) => {
+        console.error("Oturum kapatılırken bir hata oluştu: ", error);
+    });
+};
+
 
   const fetchData = async () => {
     const urunSnapshot = await getDocs(collection(db, "urunler"));
@@ -15,6 +35,13 @@ function Admin() {
     const kategoriSnapshot = await getDocs(collection(db, "kategoriler"));
     setKategoriler(kategoriSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
   };
+
+  useEffect(() => {
+    if (user !== undefined) {
+      setLoading(false);
+    }
+  }, [user]);
+
 
   useEffect(() => {
     fetchData();
@@ -57,8 +84,14 @@ function Admin() {
     }
   };
 
+  if (loading) {
+    return <div>Yükleniyor...</div>;
+  }
+
+
   return (
     <div className="p-8">
+      <button className='font-bold text-white rounded p-2 bg-red-600' onClick={logout}>Çıkış Yap</button>
       {/* Ürün Ekleme Alanı */}
       <div className="mb-6">
         <h2 className="text-3xl font-bold mb-4">Ürün Ekle</h2>
@@ -138,7 +171,7 @@ function Admin() {
         </div>
               
       </div>
-              
+      
        
     </div>
   );

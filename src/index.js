@@ -1,12 +1,15 @@
 // src/index.js
 import React from 'react';
-import ReactDOM from 'react-dom';
 import App from './App';
 import { ProductProvider } from './ProductContext';
-import "./index.css"
-ReactDOM.render(
+import "./index.css";
+import { createRoot } from 'react-dom/client';
+
+const root = document.getElementById('root');
+const appRoot = createRoot(root);
+
+appRoot.render(
   <ProductProvider>
     <App />
-  </ProductProvider>,
-  document.getElementById('root')
+  </ProductProvider>
 );
