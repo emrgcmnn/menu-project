@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 import db from "../firebaseConfig";
 import { getAuth, signOut } from 'firebase/auth';
@@ -8,6 +8,25 @@ import useAuthListener from '../useAuthListener';
 import { useNavigate } from 'react-router-dom';
 
 function Admin() {
+
+  const [duzenlemeModu, setDuzenlemeModu] = useState(null);
+  const [geciciUrun, setGeciciUrun] = useState({});
+
+  const urunuGuncelle = async () => {
+    try {
+      const urunDoc = doc(db, "urunler", duzenlemeModu.id);
+      await updateDoc(urunDoc, geciciUrun);
+      fetchData();
+      setDuzenlemeModu(null);
+      setGeciciUrun({});
+    } catch (e) {
+      console.error("Error updating document: ", e);
+    }
+  };
+
+  
+
+
   const user = useAuthListener();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -155,24 +174,70 @@ function Admin() {
         </div>
             
         <div className='w-4/5 border border-black'>
-              {/* Mevcut Ürünler Alanı */}
           <h2 className="text-3xl font-bold mb-4 ">Mevcut Ürünler</h2>
           {urunler.map((item) => (
-          <div key={item.id} className="flex justify-between items-center bg-white p-4 mb-2 rounded shadow">
-            <span className="flex-1 text-xl font-extrabold">{item.kategori}</span> 
-            <span className="flex-1 text-xl">{item.isim}</span> 
-            <span className="flex-1 text-gray-600">{item.icerik}</span> 
-            <span className="flex-1 text-red-600 font-bold">{item.fiyat}</span>
-            <button 
-              className="bg-red-500 text-white p-2 rounded hover:bg-red-700" 
-              onClick={() => urunuSil(item.id)}>Sil</button>
-          </div>
-          ))}
+            <div key={item.id}>
+            {duzenlemeModu && duzenlemeModu.id === item.id ? (
+              <div className="bg-gray-100 p-4 rounded shadow">
+                <select 
+                  className="border p-2 mr-2 rounded w-full mb-2"
+                  value={geciciUrun.kategori || ''} 
+                  placeholder="kategori"
+                  onChange={e => setGeciciUrun(prev => ({ ...prev, kategori: e.target.value }))}>
+                  {kategoriler.map(k => (
+                    <option key={k.id} value={k.isim}>{k.isim}</option>
+                  ))}
+                  
+                </select>
+                <input 
+                  className="border p-2 mr-2 rounded w-full mb-2"
+                  value={geciciUrun.isim || ''}
+                  onChange={e => setGeciciUrun(prev => ({ ...prev, isim: e.target.value }))}
+                  placeholder="Ürün İsmi"
+                />
+                <input 
+                  className="border p-2 mr-2 rounded w-full mb-2"
+                  value={geciciUrun.icerik || ''}
+                  onChange={e => setGeciciUrun(prev => ({ ...prev, icerik: e.target.value }))}
+                  placeholder="İçerik"
+                />
+                <input 
+                    className="border p-2 mr-2 rounded w-full mb-2"
+                    value={geciciUrun.fiyat || ''}
+                    onChange={e => setGeciciUrun(prev => ({ ...prev, fiyat: e.target.value }))}
+                    placeholder="Fiyat"
+                />
+                <button 
+                  className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700" 
+                  onClick={urunuGuncelle}>Güncelle
+                </button>
+              </div>
+                    ) : (
+              <div className="flex justify-between items-center bg-white p-4 mb-2 rounded shadow">
+                  <span className="flex-1 text-xl font-extrabold">{item.kategori}</span> 
+                  <span className="flex-1 text-xl">{item.isim}</span> 
+                  <span className="flex-1 text-gray-600">{item.icerik}</span> 
+                  <span className="flex-1 text-red-600 font-bold">{item.fiyat}</span>
+                  <div>
+                      <button 
+                          className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-700 mr-2" 
+                          onClick={() => {
+                              setGeciciUrun(item);
+                              setDuzenlemeModu(item);
+                          }}>
+                          Düzenle
+                      </button>
+                      <button 
+                          className="bg-red-500 text-white p-2 rounded hover:bg-red-700" 
+                          onClick={() => urunuSil(item.id)}>Sil
+                      </button>
+                    </div>
+                  </div>
+                  )}
+                </div>
+                ))}
+            </div>     
         </div>
-              
-      </div>
-      
-       
     </div>
   );
 }
