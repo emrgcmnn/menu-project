@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import db from '../firebaseConfig';
+
 
 function Menu() {
   const [urunler, setUrunler] = useState([]);
@@ -10,8 +11,10 @@ function Menu() {
     const fetchData = async () => {
       const urunSnapshot = await getDocs(collection(db, "urunler"));
       setUrunler(urunSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-      
-      const kategoriSnapshot = await getDocs(collection(db, "kategoriler"));
+  
+      // Kategorileri sıralı bir şekilde getir
+      const q = query(collection(db, "kategoriler"), orderBy("siralamaIndex"));
+      const kategoriSnapshot = await getDocs(q);
       setKategoriler(kategoriSnapshot.docs.map(doc => doc.data().isim));
     };
     fetchData(); 
