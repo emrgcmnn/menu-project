@@ -37,6 +37,8 @@ function Menu() {
                     <span className="flex-1 text-red-500 font-semibold">{urun.fiyat}</span>
                   </div>
                 </li>
+                
+                
               ))}
             </ul>
           </div>

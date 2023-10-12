@@ -8,7 +8,7 @@ function useAuthListener() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-       console.log("Current user:", currentUser);
+     
        if (currentUser) {
           setUser(currentUser);
        } else {
